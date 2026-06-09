@@ -90,9 +90,12 @@ logged and *do* move, so we test it directly instead of assuming it.
 
 v1 used a single ε=0.10, so widening/concentration could be a knife-edge artifact.
 `followups.py` sweeps ε ∈ {0.05, 0.10, 0.20, 0.40} on a low- vs high-capacity cell
-(n/m ∈ {2,8}, S=0.9). Success criterion: a monotone dose-response (more ε → wider
-basin; and, where it concentrates, lower interference / higher D). See
-`results/followups_summary.md` for the outcome and where it saturates/reverses.
+(n/m ∈ {2,8}, S=0.9, 3 seeds). **Outcome:** basin widening is **strictly monotone
+in ε** in both cells (causal, not a knife-edge); weight-level concentration is an
+**inverted-U** (improves to ε≈0.10–0.20, degrades at ε=0.40 over-perturbation), so
+v1's ε=0.10 sat near the concentration optimum. At n/m=8 concentration stays flat
+across all ε — the capacity-dependence is not an ε artifact. Full tables:
+`results/followups_summary.md`.
 
 ### P2 — Targeted LAT (matches Abbas; SPEC §9 fork) — NEW DATA
 
@@ -100,8 +103,13 @@ Abbas's result is on a *single* concept. v1 only ran untargeted LAT. New
 `lat_targeted` condition (`train.py`): the adversary corrupts **one** feature
 (the most important, j=0); the defender still optimises full reconstruction. We
 track the **target feature's own** geometry (`D_target`), not just the global
-average. SPEC §9 predicts targeting yields a "more diffuse" effect; the run tests
-whether targeting concentrates the targeted concept more than untargeted LAT does.
+average. **Outcome (n/m=2):** targeting widens the *targeted* concept's basin
+(`r_set2_target` up in 3/3 seeds, ≥ untargeted LAT) **without** the global
+de-superposition untargeted LAT produces (global interference/`mean_D` ≈ baseline)
+— i.e. it protects one concept locally and is "more diffuse" globally, exactly
+Abbas's single-concept picture and SPEC §9's prediction. **(n/m=8):** degenerate
+and noisy (2/3 seeds right-censor `r_set2_target` at the radius cap while `D_target`
+collapses — the model flattens the targeted feature); no clean conclusion there.
 See `results/followups_summary.md`.
 
 ## What was NOT changed (and why)

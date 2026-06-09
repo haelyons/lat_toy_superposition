@@ -19,18 +19,24 @@ concentration, SAE reconstruction) actually track ground-truth superposition.
 
 ```bash
 pip install -r requirements.txt
-python3 run.py        # full sweep -> results/runs.csv, results/concepts.csv
-python3 analyze.py    # tables, plots, results/summary.json + printed verdict
+python3 run.py             # full sweep -> results/runs.csv, results/concepts.csv
+python3 analyze.py         # tables, plots, results/summary.json + verdict
+python3 followups.py       # SPEC §9 forks: eps-sweep + targeted-LAT (critique)
+python3 followups_summary.py  # -> results/followups_summary.md
 ```
+
+See [`CRITIQUE.md`](CRITIQUE.md) for the post-literature-review revision (why the
+v1 concentration verdict was a measurement artifact and how it was corrected).
 
 ## Layout
 
 | file | role |
 |---|---|
-| `config.py` | all knobs (grid, seeds, ε, SAE, probe) |
+| `config.py` | all knobs (grid, seeds, ε, SAE, probe, sweep/targeted) |
 | `data.py` | synthetic sparse features; single- and two-layer toy models |
-| `train.py` | baseline / input-AT / LAT training (PGD) |
+| `train.py` | baseline / input-AT / LAT / targeted-LAT training (PGD) |
 | `sae.py` | TopK SAE proxies (FVU, L0, monosemanticity) |
 | `metrics.py` | ground-truth superposition, concept proxies, robust-region probe |
 | `run.py` | sweep orchestration (grid × condition × seed) |
-| `analyze.py` | summary tables, plots, B/C verdict |
+| `analyze.py` | summary tables, plots, B/C verdict (+ weight-level concentration) |
+| `followups.py` | ε-sweep + targeted-LAT experiments (critique) |

@@ -131,6 +131,29 @@ project: do not pool these proxies across regimes.** Full table per regime and
 per condition: `results/proxy_correlations.csv`; scatter:
 `results/proxy_vs_groundtruth.png`.
 
+## Follow-up experiments (SPEC §9 forks; `followups.py`, `results/followups_summary.md`)
+
+Two focused experiments on capacity-spanning cells (n/m ∈ {2,8}, S=0.9, 3 seeds),
+added in the critique to test causality and the Abbas mapping directly.
+
+**ε dose-response (LAT).** Basin widening is **strictly monotone in ε** in both
+cells (n/m=2: `r_set2` 0.51→0.64→0.75→1.06→2.92 for ε=base/0.05/0.10/0.20/0.40),
+so robustness is causally ε-driven, not a knife-edge of v1's single ε. Weight-level
+**concentration is an inverted-U**: `mean_D` rises and interference falls up to
+ε≈0.10–0.20, then degrade at ε=0.40 (over-perturbation) — v1's ε=0.10 sat near the
+concentration optimum. At n/m=8, concentration stays flat across all ε: the
+capacity-dependence is robust to ε, not an ε artifact.
+
+**Targeted LAT (matches Abbas).** Corrupting a single concept (feature 0) at n/m=2
+widens that **target concept's** basin (`r_set2_target` up in 3/3 seeds, ≥ untargeted
+LAT) **without** the global de-superposition untargeted LAT produces (global
+interference and `mean_D` ≈ baseline). That is the Abbas single-concept picture —
+targeting concentrates/protects the one concept and is "more diffuse" globally,
+exactly as SPEC §9 predicted. At n/m=8 the targeted result is **degenerate and
+noisy** (2/3 seeds: `r_set2_target` hits the radius cap, right-censored, while
+`D_target` collapses — the model flattens the targeted feature); reported with
+that caveat, no clean conclusion there.
+
 ## Caveats
 
 - **Across-seed variance.** Verdicts above are mean over 5 seeds; the held-out

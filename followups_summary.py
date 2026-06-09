@@ -37,6 +37,27 @@ for nm in sorted(df.n_over_m.unique()):
                      f"{g.D_target:.3f} | {g.r_set2_mean:.3f} | {g.r_set2_target:.3f} |")
 lines.append("")
 
+lines += [
+    "## Interpretation", "",
+    "**1. eps dose-response.** Basin widening (`r_set2`) is strictly monotone in",
+    "eps in both cells -- robustness is causally eps-driven, not a knife-edge of the",
+    "v1 eps=0.10. Concentration (n/m=2: `mean_D` up, interference down) is an",
+    "**inverted-U**: it improves up to eps in [0.10, 0.20] then degrades at eps=0.40",
+    "(over-perturbation). The v1 single eps=0.10 sat near the concentration optimum.",
+    "At n/m=8 concentration stays flat/absent across all eps -- the capacity-",
+    "dependence (Bereska) is robust to eps, not an artifact of one eps.", "",
+    "**2. Targeted LAT (matches Abbas).** At n/m=2, targeting feature 0 widens the",
+    "*targeted* concept's basin (`r_set2_target` up in 3/3 seeds, >= untargeted)",
+    "**without** inducing the global de-superposition that untargeted LAT produces",
+    "(global interference and `mean_D` stay ~baseline). I.e. targeting protects one",
+    "concept locally and is 'more diffuse' globally -- exactly Abbas's single-concept",
+    "concentration picture and SPEC 9's prediction. At n/m=8 the targeted result is",
+    "**degenerate and noisy**: in 2/3 seeds `r_set2_target` approaches the radius cap",
+    "(~19, right-censored) while `D_target` collapses -- the high-capacity model",
+    "flattens the targeted feature rather than cleanly protecting it. No clean",
+    "conclusion at n/m=8; reported with this caveat.", "",
+]
+
 with open("results/followups_summary.md", "w") as f:
     f.write("\n".join(lines))
-print("\n".join(lines))
+print("\n".join(lines[-22:]))
