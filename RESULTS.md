@@ -22,8 +22,19 @@ degenerate (right-censored) radius. Saturation at the radius cap is logged
 
 ## Claim B — concentrate + widen
 
-**Verdict: split. The *widen* half is strongly supported and generalises to
-unseen directions; the *concentrate* half is not observed; the two do NOT co-occur.**
+**Verdict (revised after the literature critique — see `CRITIQUE.md`): both
+halves supported, capacity-dependently. The *widen* half is strongly supported
+and generalises to unseen directions. The *concentrate* half IS observed once
+measured at the level that can move (the weight geometry, not the
+structurally-degenerate latent-cloud proxy); widen + concentrate co-occur in the
+low/mid-capacity cells and the concentration weakens/reverses at the highest
+capacity (n/m = 8), matching Bereska et al.**
+
+> **v1 said the opposite ("concentrate not observed; decoupled"). That was a
+> measurement artifact.** The concentration proxy was measured on the linear
+> early latent `h1 = W1·x`, where each feature's signal is structurally rank-1, so
+> the proxy tracks co-activation interference (sparsity) and cannot detect
+> concentration. Disqualified — see *Concentration* below.
 
 ### Widening (supported, 9/9 cells)
 LAT increases the per-concept critical radius along **held-out random directions**
@@ -50,18 +61,48 @@ It is **large** in the two low-sparsity high-capacity cells (n/m=8, S∈{0.8,0.9
 std ≈ 4.5), so the ordering there is directional but noisy. See
 `results/basin_comparison.png`, `results/basin_comparison.csv`.
 
-### Concentration (not observed)
-LAT does **not** push concepts toward ~1D in the early latent. The cleanliness
-proxy `top1_evr` is essentially unchanged across conditions (e.g. n/m=2,S=0.8:
-baseline 0.306 vs LAT 0.299), and participation ratio drifts slightly *up* under
-LAT, not toward 1. So in this toy:
+### Concentration (observed at the weight level; the latent-cloud proxy is disqualified)
 
-> widening of the robust basin and concentration toward 1D are **decoupled** —
-> LAT widens the neutral region **without** making the concept cleaner.
+**The latent-cloud proxy cannot detect concentration here.** `top1_evr`/`pr` are
+computed on `h1 = W1·x`, a *linear* map, so feature *i*'s own signal is exactly
+one direction (`W1_i`); an isolated feature gives `top1_evr = 1.0000`. The cloud's
+apparent dimensionality is pure co-activation interference, set by sparsity
+(`top1_evr` ≈ 0.27 / 0.38 / 0.90 at S = 0.80 / 0.90 / 0.99, mirroring the
+co-active-feature count). It is constant across conditions because it *structurally
+cannot move with training* — not because concentration is absent. v1 reported its
+null as a finding; it should have been disqualified.
 
-This contradicts Claim B's central prediction that the two co-occur
-(`results/summary.json`: co-occurrence in 0/9 cells). See *Caveats* for the
-measurement limitation on the concentration proxy.
+**Measured where it can move — the ground-truth weight geometry — LAT
+concentrates** (`results/weight_concentration.csv`, paired by seed):
+
+- **LAT raises per-feature dimensionality `D` (cleaner / less superposition) in
+  9/9 cells** (5/5 seeds in 8/9). `D` is the SPEC §6 ground-truth measure.
+- **LAT lowers off-diagonal interference in the low/mid-capacity cells
+  (n/m ∈ {2,4})** — but **raises it at n/m = 8**.
+
+| n/m (S=0.9) | D base→LAT | interference base→LAT | concentrates? |
+|----:|---|---|:--:|
+| 2 | 0.451 → **0.480** | 0.065 → **0.057** | ✅ |
+| 4 | 0.226 → **0.237** | 0.140 → **0.116** | ✅ |
+| 8 | 0.111 → **0.115** | 0.256 → **0.293** | ✗ (interference up) |
+
+> So widening of the robust basin and concentration of the concept geometry
+> **co-occur** in the low/mid-capacity regime — LAT carves a **wider neutral
+> region around a *cleaner* (lower-dimensional) concept direction**, as Claim B
+> predicted. The "high-dimensional cloud" picture in v1 was the proxy artifact.
+
+**Capacity-dependence (Bereska et al.).** The interference reduction is present
+at n/m ∈ {2,4} and reverses at n/m = 8 (highest capacity pressure) — a direct
+in-house replication of Bereska et al. (2025): adversarial training does not
+*universally* reduce superposition; the sign depends on capacity. This also
+refutes SPEC §2's original "AT reduces superposition is settled" assumption (now
+revised in SPEC §2).
+
+**Mapping onto Abbas et al. (2025).** Abbas find LAT *concentrates* the refusal
+direction (first SVD component 49%→54%). Our weight-level result is the toy
+analogue and **agrees in sign**: LAT yields a *robust low-dimensional basin*, not
+a high-dimensional spread. The earlier apparent contradiction with Abbas was
+entirely the degenerate proxy.
 
 ## Claim C — do the proxies track ground-truth superposition?
 
@@ -96,12 +137,12 @@ per condition: `results/proxy_correlations.csv`; scatter:
   basin ordering is tight in high-sparsity cells but noisy in the two low-sparsity
   high-capacity cells (n/m=8, S∈{0.8,0.9}). Per-seed spread is in
   `results/basin_comparison.csv` and `results/summary.json`.
-- **Concentration proxy.** The per-concept cloud `{h1 | i active} − mean(h1 | i inactive)`
-  has its spread dominated by *co-active* features (interference), so its PR/EVR
-  measures interference dimensionality more than the concept's own cleanliness.
-  The "no concentration" result should be read as "the activation-cloud proxy did
-  not move," not necessarily "weight-level superposition was unchanged" (the latter
-  is taken as given from Gorton et al. per SPEC §2 and not re-tested here).
+- **Concentration proxy (now disqualified, see Concentration above).** The
+  per-concept cloud `{h1 | i active} − mean(h1 | i inactive)` is measured on a
+  *linear* encoder, so its spread is pure co-activation interference and it cannot
+  move with training. It is retained only as a Claim-C calibration result (a proxy
+  that tracks sparsity, not superposition). Weight-level superposition was **not**
+  taken as given — it is tested directly via `D`/interference and does move.
 - **Reconstruction quality.** Two-layer FVU ≈ 0.07–0.14 (vs ~0.01–0.08 single-layer);
   the extra nonlinearity costs some fidelity but is matched across conditions.
 - **Dead features.** ~40% of concepts are unrepresented at n/m≥4 under geometric

@@ -20,7 +20,9 @@ Two specific, testable claims:
 - **Claim B (concentrate + widen).** LAT makes each concept’s representation *cleaner* (closer to a single direction) while *also* widening the robust region around it. The interesting part is that these happen *together* — concentration and robustness are not in tension.
 - **Claim C (do the proxies work?).** On real models the team used indirect measures — participation ratio, SVD concentration, SAE reconstruction quality — as stand-ins for “how much superposition is there.” With ground truth available here, we check when those proxies track real superposition and when they mislead.
 
-We take as already established (from Gorton et al.) that adversarial training reduces superposition, so we do **not** re-test that — we build on it.
+~~We take as already established (from Gorton et al.) that adversarial training reduces superposition, so we do **not** re-test that — we build on it.~~
+
+> **Revised (post-literature-critique, see `CRITIQUE.md`).** This assumption is *contested*, not settled: Bereska et al. (2025) find adversarial training's effect on superposition is **capacity-dependent** and can reverse. We therefore do **not** assume it — we test it directly with the ground-truth weight metrics (`D_i`, off-diagonal interference), which the pipeline already logs. Our own data confirms the capacity-dependence: LAT reduces interference at n/m ∈ {2,4} but not at n/m = 8.
 
 ### 3. What a good result looks like
 

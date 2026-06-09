@@ -81,6 +81,40 @@ def basin_comparison(con):
     return g
 
 
+# ---------- (b2) weight-level concentration across conditions (Claim B, corrected) ----------
+
+def weight_concentration(runs):
+    """Does LAT concentrate the concept GEOMETRY (weights), paired by seed per cell?
+
+    The per-concept latent-cloud proxy (top1_evr/pr) is measured on the linear
+    early latent h1 = W1 x, where each feature's signal is structurally rank-1, so
+    its apparent dimensionality is pure co-activation interference (set by sparsity)
+    and cannot move with training. The quantity that CAN move is the ground-truth
+    weight geometry: mean per-feature dimensionality D (higher = cleaner / less
+    superposition) and off-diagonal interference (lower = cleaner). We compare LAT
+    and input-AT to baseline, paired by seed, in every cell."""
+    rows = []
+    for (nm, S), df in runs.groupby(["n_over_m", "sparsity"]):
+        pv_D = df.pivot_table(index="seed", columns="condition", values="mean_D")
+        pv_I = df.pivot_table(index="seed", columns="condition", values="interference")
+        if not all(c in pv_D.columns for c in ["baseline", "lat", "input_at"]):
+            continue
+        dD = pv_D["lat"] - pv_D["baseline"]
+        dI = pv_I["lat"] - pv_I["baseline"]
+        rows.append({
+            "n_over_m": nm, "sparsity": S,
+            "D_base": pv_D["baseline"].mean(), "D_lat": pv_D["lat"].mean(),
+            "dD_lat_minus_base": dD.mean(), "dD_seeds_pos": int((dD > 0).sum()),
+            "I_base": pv_I["baseline"].mean(), "I_lat": pv_I["lat"].mean(),
+            "dI_lat_minus_base": dI.mean(), "dI_seeds_neg": int((dI < 0).sum()),
+            "n_seeds": len(dD),
+            "lat_concentrates": bool(dD.mean() > 0 and dI.mean() < 0),
+        })
+    out = pd.DataFrame(rows)
+    out.to_csv("results/weight_concentration.csv", index=False)
+    return out
+
+
 # ---------- (c) concentration vs ground truth ----------
 
 def concentration_vs_gt(con):
@@ -161,7 +195,7 @@ def plot_proxy_scatter(con):
 
 # ---------- verdict ----------
 
-def verdict(con, runs, corr):
+def verdict(con, runs, corr, wconc):
     """Quantitative B/C verdict with across-seed spread."""
     # Claim B: per cell, does LAT widen r_set2 (held-out) vs baseline & input_at,
     # and does PR drop toward 1, co-occurring? (represented concepts only)
@@ -193,10 +227,26 @@ def verdict(con, runs, corr):
     # Claim C: which proxies track D_i (pooled spearman) and where they diverge
     pooled = corr[corr.regime == "ALL"][["proxy", "spearman_vs_D"]].set_index("proxy")["spearman_vs_D"].to_dict()
 
+    # Concentration at the level that can actually move (weights), not the
+    # structurally-degenerate latent-cloud proxy.
+    wc_conc_frac = float(wconc["lat_concentrates"].mean()) if len(wconc) else float("nan")
+    wc_D_frac = float((wconc["dD_lat_minus_base"] > 0).mean()) if len(wconc) else float("nan")
+    wc_I_frac = float((wconc["dI_lat_minus_base"] < 0).mean()) if len(wconc) else float("nan")
+
     summary = {
         "claim_B": {
             "cells_where_LAT_widens_heldout_basin": b_widen_frac,
-            "cells_where_widen_AND_concentrate_cooccur": b_cooccur_frac,
+            "cells_where_widen_AND_concentrate_cooccur_LATENTCLOUD": b_cooccur_frac,
+            "_note_latentcloud": ("pr/top1_evr proxy is measured on the linear early "
+                                  "latent where each feature is structurally rank-1; it "
+                                  "tracks sparsity (interference), not concept cleanliness, "
+                                  "so it cannot detect concentration. See weight-level below."),
+            "WEIGHT_LEVEL_concentration": {
+                "cells_where_LAT_raises_D": wc_D_frac,
+                "cells_where_LAT_lowers_interference": wc_I_frac,
+                "cells_where_both (concentrates)": wc_conc_frac,
+                "per_cell": wconc.to_dict("records"),
+            },
             "per_cell": b_rows,
         },
         "claim_C": {
@@ -213,18 +263,25 @@ def main():
     runs, con = load()
     corr = proxy_correlations(con)
     basin_comparison(con)
+    wconc = weight_concentration(runs)
     concentration_vs_gt(con)
     plot_basin(con)
     plot_concentration_vs_basin(con)
     plot_proxy_scatter(con)
-    summary = verdict(con, runs, corr)
+    summary = verdict(con, runs, corr, wconc)
 
     print("\n==== CLAIM B (concentrate + widen) ====")
     b = summary["claim_B"]
     print(f"LAT widens held-out basin vs baseline & input-AT in "
           f"{b['cells_where_LAT_widens_heldout_basin']*100:.0f}% of cells")
-    print(f"widen AND concentrate co-occur in "
-          f"{b['cells_where_widen_AND_concentrate_cooccur']*100:.0f}% of cells")
+    print(f"[latent-cloud proxy] widen AND concentrate co-occur in "
+          f"{b['cells_where_widen_AND_concentrate_cooccur_LATENTCLOUD']*100:.0f}% of cells "
+          f"(proxy is structurally degenerate -- see note)")
+    w = b["WEIGHT_LEVEL_concentration"]
+    print(f"[weight level] LAT raises per-feature D in "
+          f"{w['cells_where_LAT_raises_D']*100:.0f}% of cells; lowers interference in "
+          f"{w['cells_where_LAT_lowers_interference']*100:.0f}%; concentrates (both) in "
+          f"{w['cells_where_both (concentrates)']*100:.0f}%")
     print("\n==== CLAIM C (do proxies track ground truth?) ====")
     for p, s in summary["claim_C"]["pooled_spearman_proxy_vs_D"].items():
         print(f"  {p:10s} Spearman vs D_i = {s:.3f}")

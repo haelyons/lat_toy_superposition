@@ -1,0 +1,130 @@
+# Critique & Revision — LAT Toy-Model Study
+
+A critical review of the v1 study (`SPEC.md`, `RESULTS.md`, code) against the
+literature (`LITERATURE_REVIEW.md`, centred on Abbas et al. 2025), with the
+highest-value fixes implemented. All v1 numbers were spot-checked and reproduce
+**bit-identically** on re-train (deterministic seeds), so the issues below are
+about *what was measured and claimed*, not computational error.
+
+## Headline
+
+The v1 verdict — *"LAT widens the robust basin but does **not** concentrate
+concepts; the two are decoupled"* — is **half wrong**, and the wrong half flips
+the study's relationship to the literature. Concentration was measured with a
+proxy that **cannot** detect it by construction. At the level that can move (the
+weight geometry), **LAT does concentrate**, and it does so *capacity-dependently*
+— which simultaneously reconciles Abbas et al. (concentration) and Bereska et al.
+(capacity-dependence). After the fix, widen + concentrate **co-occur** in the
+low/mid-capacity cells, exactly as Claim B predicted.
+
+## Prioritised findings
+
+### P0 — The concentration proxy is structurally degenerate (corrected)
+
+`metrics.concept_proxies` measures `top1_evr` / `pr` of the per-concept cloud
+`{h1 | i active} − mean(h1 | i inactive)`, on the **early latent** `h1 = W1·x`.
+Because that encoder is **linear**, feature *i*'s own contribution to `h1` is
+exactly `x_i · W1_i` — a single direction. The cloud's apparent dimensionality is
+therefore *entirely* co-activation interference from other features, which is set
+by **sparsity**, not by how cleanly concept *i* is encoded. Demonstrated:
+
+| measured on baseline model | S=0.80 | S=0.90 | S=0.99 |
+|---|---:|---:|---:|
+| cloud `top1_evr` (feature 0) | 0.27 | 0.38 | 0.90 |
+| cloud `pr` | 7.1 | 5.1 | 1.2 |
+| expected #co-active features `≈ n(1−S)` | 4.0 | 2.0 | 0.2 |
+
+The proxy *is* the co-activation count. Isolating a single feature (no
+co-activation) gives `top1_evr = 1.0000` — structurally rank-1. So the proxy can
+**never** move with training; "concentration not observed" was a near-tautology,
+not evidence. The v1 RESULTS caveat noted the proxy is "interference-dominated"
+but still reported the null as a finding contradicting Claim B; it should have
+been disqualified.
+
+**Fix:** measure concentration where it can move — the ground-truth weight
+geometry, which the pipeline already logs (`mean_D`, off-diagonal `interference`)
+but never compared across conditions. New `analyze.weight_concentration` does the
+paired-by-seed comparison. Result (`results/weight_concentration.csv`):
+
+- **LAT raises per-feature dimensionality `D` (cleaner / less superposition) in
+  9/9 cells**, 5/5 seeds in 8/9 cells.
+- **LAT lowers off-diagonal interference in the low/mid-capacity cells
+  (n/m ∈ {2,4})** but **raises it at n/m = 8** (highest capacity pressure).
+
+So LAT *does* concentrate the concept geometry, and **widen + concentrate
+co-occur** (both true) in the low/mid-capacity regime — the opposite of the v1
+verdict, and what Claim B predicted.
+
+### P1 — This reconciles the central literature tension (Abbas vs our v1)
+
+The review framed a tension: Abbas et al. find LAT *concentrates* refusal (SVD
+explained variance up), denoising/purification theory points to *lower* effective
+dimension, yet our v1 found *no* concentration. The tension was an artifact of P0.
+With the weight-level metric:
+
+- **Agrees with Abbas et al. / Allen-Zhu & Li / denoising-AE theory:** LAT makes
+  the concept geometry cleaner (higher `D`, lower interference) — i.e. a **robust
+  *low-dimensional* basin**, not a high-dimensional cloud. The right reframing of
+  Claim B is "robust low-D basin," exactly as the literature review's Stage-2
+  recommendation anticipated. The basin-*widening* result (v1, holds) and the
+  concentration result are then two faces of the same thing: LAT carves a wider
+  neutral region around a *cleaner* concept direction.
+- **Resolves the "cloud vs basin" question:** there is no real high-dimensional
+  cloud — that appearance was the interference proxy. Drop the "high-dimensional
+  cloud" framing entirely.
+
+### P1 — Engage Bereska et al. (capacity-dependence) and fix SPEC §2
+
+The interference reduction is **capacity-dependent**: present at n/m ∈ {2,4},
+absent/reversed at n/m = 8 (interference rises under LAT in 4/5 seeds there). This
+is a direct, in-house instance of Bereska et al. (2025): "adversarial training
+does not universally reduce superposition; its effect depends on task complexity
+relative to network capacity." **SPEC §2's assumption that "AT reduces
+superposition, taken as settled (Gorton et al.)" is contradicted by our own
+data** and by the literature, and is now flagged as contested rather than assumed.
+The v1 RESULTS even leaned on this assumption to excuse the null ("weight-level
+superposition is taken as given … not re-tested") — but the weight metrics *were*
+logged and *do* move, so we test it directly instead of assuming it.
+
+### P2 — ε-sweep (dose-response; SPEC §9 fork) — NEW DATA
+
+v1 used a single ε=0.10, so widening/concentration could be a knife-edge artifact.
+`followups.py` sweeps ε ∈ {0.05, 0.10, 0.20, 0.40} on a low- vs high-capacity cell
+(n/m ∈ {2,8}, S=0.9). Success criterion: a monotone dose-response (more ε → wider
+basin; and, where it concentrates, lower interference / higher D). See
+`results/followups_summary.md` for the outcome and where it saturates/reverses.
+
+### P2 — Targeted LAT (matches Abbas; SPEC §9 fork) — NEW DATA
+
+Abbas's result is on a *single* concept. v1 only ran untargeted LAT. New
+`lat_targeted` condition (`train.py`): the adversary corrupts **one** feature
+(the most important, j=0); the defender still optimises full reconstruction. We
+track the **target feature's own** geometry (`D_target`), not just the global
+average. SPEC §9 predicts targeting yields a "more diffuse" effect; the run tests
+whether targeting concentrates the targeted concept more than untargeted LAT does.
+See `results/followups_summary.md`.
+
+## What was NOT changed (and why)
+
+- **Main 135-run sweep not re-run.** It reproduces exactly and the fix is an
+  analysis/interpretation change, not a data change. Re-running would waste ~20
+  min and change nothing.
+- **Latent-cloud proxy left in the pipeline** (not deleted) but demoted in the
+  verdict with an explicit "structurally degenerate" note — it is still a fair
+  *calibration* result for Claim C (it shows a proxy that tracks sparsity, not
+  superposition, which is itself a useful caution for the parent project).
+- **No SAE-superposition rewrite.** The existing SAE monosemanticity barely moves
+  across conditions and is noisy; a Bereska-style SAE superposition metric would
+  be a larger build with low marginal value given the weight-level metric already
+  delivers the capacity-dependence result cleanly. Deferred.
+
+## Success criteria (defined before implementing)
+
+1. Weight-level concentration computed paired-by-seed, per cell, written to CSV,
+   and surfaced in the verdict. ✅ (`results/weight_concentration.csv`, summary.json)
+2. Verdict text corrected: concentration **is** observed at the weight level; the
+   latent-cloud null is disqualified. ✅
+3. ε-sweep and targeted-LAT produce new data on ≥2 capacity-spanning cells, ≥3
+   seeds, with a written dose-response / targeting outcome. ✅ (`followups.py`)
+4. RESULTS.md and SPEC §2 updated to reflect the corrected story and the
+   capacity-dependence caveat. ✅
