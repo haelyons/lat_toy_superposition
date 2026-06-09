@@ -1,0 +1,44 @@
+{
+  "two_layer": true,
+  "m": 10,
+  "n_over_m": [
+    2,
+    4,
+    8
+  ],
+  "sparsity": [
+    0.8,
+    0.9,
+    0.99
+  ],
+  "importance_decay": 0.9,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "steps": 5000,
+  "batch": 1024,
+  "lr": 0.001,
+  "eps_rel": 0.1,
+  "pgd_steps": 7,
+  "pgd_step_frac": 0.35,
+  "sae_dict_mult": 4,
+  "sae_steps": 3000,
+  "sae_lr": 0.001,
+  "sae_batch": 1024,
+  "tau": 0.1,
+  "n_random_dirs": 8,
+  "radius_bisect_iters": 25,
+  "radius_cap_rel": 20.0,
+  "represented_w_norm": 0.3,
+  "probe_samples": 512,
+  "eval_batch": 8192,
+  "conditions": [
+    "baseline",
+    "input_at",
+    "lat"
+  ]
+}

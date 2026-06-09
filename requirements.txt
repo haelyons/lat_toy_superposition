@@ -1,0 +1,7 @@
+# CPU-only is sufficient; for torch CPU wheels use:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.2
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.7
+pandas>=2.0

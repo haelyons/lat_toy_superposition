@@ -1,0 +1,125 @@
+{
+  "claim_B": {
+    "cells_where_LAT_widens_heldout_basin": 1.0,
+    "cells_where_widen_AND_concentrate_cooccur": 0.0,
+    "per_cell": [
+      {
+        "n_over_m": 2,
+        "sparsity": 0.8,
+        "r2_lat": 0.8625217895410214,
+        "r2_base": 0.5515363292510378,
+        "r2_input": 0.5450672508605054,
+        "r2_lat_std": 0.04071850789554306,
+        "lat_widens_heldout": true,
+        "pr_lat": 6.50891173624853,
+        "pr_base": 6.266248058034334,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 2,
+        "sparsity": 0.9,
+        "r2_lat": 0.744733014122436,
+        "r2_base": 0.5089356786012649,
+        "r2_input": 0.5181515128291838,
+        "r2_lat_std": 0.025634940662877935,
+        "lat_widens_heldout": true,
+        "pr_lat": 4.976658918983058,
+        "pr_base": 4.853815236091614,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 2,
+        "sparsity": 0.99,
+        "r2_lat": 0.6228332865238191,
+        "r2_base": 0.42540687203407285,
+        "r2_input": 0.43117423802614213,
+        "r2_lat_std": 0.01017856612326463,
+        "lat_widens_heldout": true,
+        "pr_lat": 1.38561954498291,
+        "pr_base": 1.3829716169834136,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 4,
+        "sparsity": 0.8,
+        "r2_lat": 0.9211957332160738,
+        "r2_base": 0.5927094739553525,
+        "r2_input": 0.7053682434496954,
+        "r2_lat_std": 0.04474409884192754,
+        "lat_widens_heldout": true,
+        "pr_lat": 6.628288892640008,
+        "pr_base": 6.391960442944577,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 4,
+        "sparsity": 0.9,
+        "r2_lat": 0.8530944583159539,
+        "r2_base": 0.5600158768350428,
+        "r2_input": 0.5763263437196724,
+        "r2_lat_std": 0.08825375987828005,
+        "lat_widens_heldout": true,
+        "pr_lat": 5.138879519561149,
+        "pr_base": 4.992481735124217,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 4,
+        "sparsity": 0.99,
+        "r2_lat": 1.4079627203493428,
+        "r2_base": 0.5388831405341625,
+        "r2_input": 0.52399948831719,
+        "r2_lat_std": 0.5867679646462677,
+        "lat_widens_heldout": true,
+        "pr_lat": 2.0276509386701607,
+        "pr_base": 1.965780636072159,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 8,
+        "sparsity": 0.8,
+        "r2_lat": 4.313161893125743,
+        "r2_base": 1.514505243809409,
+        "r2_input": 3.946731666003931,
+        "r2_lat_std": 4.507622333899151,
+        "lat_widens_heldout": true,
+        "pr_lat": 7.298326054220494,
+        "pr_base": 6.557469922481035,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 8,
+        "sparsity": 0.9,
+        "r2_lat": 4.1752313188335854,
+        "r2_base": 1.7704745834003717,
+        "r2_input": 2.5126604030957895,
+        "r2_lat_std": 4.459564170101181,
+        "lat_widens_heldout": true,
+        "pr_lat": 5.647040959407745,
+        "pr_base": 5.36923305151401,
+        "lat_concentrates": false
+      },
+      {
+        "n_over_m": 8,
+        "sparsity": 0.99,
+        "r2_lat": 2.139884973922361,
+        "r2_base": 1.5240120502573324,
+        "r2_input": 1.9217465031778276,
+        "r2_lat_std": 0.7801348725885433,
+        "lat_widens_heldout": true,
+        "pr_lat": 2.4761648858397214,
+        "pr_base": 2.438745628157161,
+        "lat_concentrates": false
+      }
+    ]
+  },
+  "claim_C": {
+    "pooled_spearman_proxy_vs_D": {
+      "top1_evr": -0.02843972890028597,
+      "pr": 0.07727959962171188,
+      "r_set1": -0.377345344572343,
+      "r_set2": -0.30745371385633113
+    },
+    "note": "see results/proxy_correlations.csv for per-regime breakdown"
+  }
+}
