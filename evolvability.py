@@ -193,7 +193,7 @@ def _worker(job):
 
 def main():
     cells = [(2, 0.9), (4, 0.9), (8, 0.9)]          # span capacity at fixed sparsity
-    seeds = (0, 1, 2)
+    seeds = (0, 1, 2, 3, 4)                          # >=5 seeds (SPEC 7); evolvability signals are seed-noisy
     jobs = [(nm * CFG.m, CFG.m, S, cond, seed)
             for (nm, S) in cells for cond in CFG.conditions for seed in seeds]
     print(f"Evolvability runs: {len(jobs)} (cells={cells}, conds={CFG.conditions}, seeds={seeds})")

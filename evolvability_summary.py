@@ -30,26 +30,27 @@ for _, r in g.iterrows():
              f"{r.steps:.0f} | {r.forgetting:+.4f} | {r.fvu_new_end:.3f} |")
 L.append("")
 
-# ---- paired LAT vs baseline verdict ----
-L += ["## LAT vs baseline (paired by seed)", "",
-      "| n/m | Δ readability (LAT−base, <0 better) | Δ forgetting (LAT−base, <0 better) | Δ steps (LAT−base) |",
+# ---- paired LAT vs baseline verdict (per-SEED counts -- means are seed-driven) ----
+L += ["## LAT vs baseline (paired by seed; per-seed win counts, not cell means)", "",
+      "Means can be dominated by a single seed, so we count seed-cells where LAT beats "
+      "baseline. n_seeds=number of seeds per cell.", "",
+      "| n/m | readability better (seeds) | forgetting lower (seeds) | adapts faster (seeds) |",
       "|----:|---:|---:|---:|"]
-acc = {"read": 0, "forget": 0, "cells": 0}
+tot = {"read": 0, "forget": 0, "fast": 0, "N": 0}
 for nm, df in ad.groupby("n_over_m"):
-    piv_s = df.pivot_table(index="seed", columns="condition", values="fvu_new_start")
-    piv_f = df.pivot_table(index="seed", columns="condition", values="forgetting")
-    piv_t = df.pivot_table(index="seed", columns="condition", values="steps_to_new_thresh")
-    dr = (piv_s["lat"] - piv_s["baseline"]).mean()
-    dfg = (piv_f["lat"] - piv_f["baseline"]).mean()
-    dt = (piv_t["lat"] - piv_t["baseline"]).mean()
-    acc["cells"] += 1
-    acc["read"] += int(dr < 0)
-    acc["forget"] += int(dfg < 0)
-    L.append(f"| {nm} | {dr:+.2f} | {dfg:+.4f} | {dt:+.0f} |")
+    ps = df.pivot_table(index="seed", columns="condition", values="fvu_new_start")
+    pf = df.pivot_table(index="seed", columns="condition", values="forgetting")
+    pt = df.pivot_table(index="seed", columns="condition", values="steps_to_new_thresh")
+    ns = len(ps)
+    nr = int(((ps["lat"] - ps["baseline"]) < 0).sum())
+    nf = int(((pf["lat"] - pf["baseline"]) < 0).sum())
+    nt = int(((pt["lat"] - pt["baseline"]) < 0).sum())
+    tot["read"] += nr; tot["forget"] += nf; tot["fast"] += nt; tot["N"] += ns
+    L.append(f"| {nm} | {nr}/{ns} | {nf}/{ns} | {nt}/{ns} |")
 L += ["",
-      f"LAT improves new-concept readability (lower fvu_new_start) vs baseline in "
-      f"{acc['read']}/{acc['cells']} cells; reduces forgetting in "
-      f"{acc['forget']}/{acc['cells']} cells.", ""]
+      f"**Across all {tot['N']} seed-cells:** LAT better new-concept readability in "
+      f"{tot['read']}/{tot['N']}, lower forgetting in {tot['forget']}/{tot['N']}, "
+      f"faster adaptation in {tot['fast']}/{tot['N']}.", ""]
 
 # ---- compositionality ----
 cg = (comp.groupby(["n_over_m", "k_active", "condition"]).fvu_old.mean()
