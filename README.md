@@ -23,6 +23,8 @@ python3 run.py             # full sweep -> results/runs.csv, results/concepts.cs
 python3 analyze.py         # tables, plots, results/summary.json + verdict
 python3 followups.py       # SPEC §9 forks: eps-sweep + targeted-LAT (critique)
 python3 followups_summary.py  # -> results/followups_summary.md
+python3 evolvability.py    # SPEC §10: Wagner robustness-enables-evolvability probe
+python3 evolvability_summary.py  # -> results/evolvability_summary.md
 ```
 
 See [`CRITIQUE.md`](CRITIQUE.md) for the post-literature-review revision (why the
@@ -40,3 +42,4 @@ v1 concentration verdict was a measurement artifact and how it was corrected).
 | `run.py` | sweep orchestration (grid × condition × seed) |
 | `analyze.py` | summary tables, plots, B/C verdict (+ weight-level concentration) |
 | `followups.py` | ε-sweep + targeted-LAT experiments (critique) |
+| `evolvability.py` | Wagner evolvability probe: adapt-to-new-concept + compositionality |

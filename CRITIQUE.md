@@ -112,6 +112,22 @@ and noisy (2/3 seeds right-censor `r_set2_target` at the radius cap while `D_tar
 collapses — the model flattens the targeted feature); no clean conclusion there.
 See `results/followups_summary.md`.
 
+### P1 — Evolvability probe (the Wagner payoff; SPEC §10) — NEW DATA
+
+The robustness half of the hypothesis was done; the *evolvability* half — the whole
+point of the Wagner import — was untested. `evolvability.py` adds it: pretrain with
+one concept held out, give it a fresh identical readout, then fine-tune it in
+identically across conditions and measure adaptation speed, final quality, and
+forgetting of old concepts (n/m∈{2,4,8}, S=0.9, 5 seeds). Two design bugs were found
+and fixed en route — a dead-ReLU revive-or-not confound (fixed by the fresh readout)
+and a 3-seed result that was entirely seed-0-driven (fixed by 5 seeds + per-seed
+win-counts, not cell means). **Outcome: asymmetric, partial support.** LAT
+*reduces forgetting* of existing concepts during adaptation (12/14 seed-cells) but is
+*slower* to acquire the new concept (13/14) and fails once outright — the robust
+basin protects what exists but is stiffer, not more plastic. Readability (3/15) and
+compositionality are not LAT-favouring. The Wagner analogy narrows to "robustness ↔
+non-destructive integration," not "↔ faster reach." See `results/evolvability_summary.md`.
+
 ## What was NOT changed (and why)
 
 - **Main 135-run sweep not re-run.** It reproduces exactly and the fix is an

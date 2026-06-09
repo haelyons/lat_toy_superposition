@@ -154,6 +154,41 @@ noisy** (2/3 seeds: `r_set2_target` hits the radius cap, right-censored, while
 `D_target` collapses — the model flattens the targeted feature); reported with
 that caveat, no clean conclusion there.
 
+## Evolvability probe — does the robust basin *enable* adaptation? (SPEC §10; `evolvability.py`)
+
+This is the Wagner "robustness enables evolvability" half of the hypothesis, which
+v1 deferred. Robustness (a wide, clean neutral basin) is established above; Wagner's
+further claim is that the same basin makes reaching a **new** concept easier. We
+pretrain with one feature held out (uniform importance), give its readout a fresh
+*identical* init across conditions (so only the surrounding basin differs — this
+avoids a dead-ReLU revive-or-not confound), then fine-tune the new concept in under
+selection pressure identically across baseline/input-AT/LAT. Cells n/m∈{2,4,8},
+S=0.9, 5 seeds. Verdict in `results/evolvability_summary.md`.
+
+**Verdict: asymmetric, partial support.** LAT's robust basin *protects existing
+concepts during adaptation* but does *not* speed acquisition of new ones — the two
+faces of Wagner come apart in this toy.
+
+- **Less forgetting (supported, 12/14 both-adapted seed-cells; 5/5 at n/m=4).**
+  Adding the new concept disrupts the *old* concepts less under LAT than baseline.
+  Mechanistically consistent with the established interference result: cleaner,
+  more-orthogonal features → the new concept's updates collide less with existing
+  ones. This is the "robustness preserved through change" facet of evolvability.
+- **Slower acquisition (refutes the strong reading, 13/14 seed-cells slower), with
+  one outright failure** (LAT n/m=2 seed 4 never reaches the new-concept threshold
+  in budget). The wide/flat robust basin is *stiffer*: smaller gradients → slower
+  descent. So LAT does **not** deliver "easier/faster access to new phenotypes."
+- **New-concept readability: seed noise (3/15).** A fresh readout is *not* reliably
+  more separable in the LAT basin once measured across enough seeds (at 3 seeds a
+  single seed faked a strong effect — a caution logged in the summary).
+- **Compositional generalisation (novel dense feature combinations): mixed.**
+  input-AT is often best at high co-activation `k`; LAT sits between it and baseline.
+  No clean evolvability signal.
+
+So in this toy the analogy refines to: **robustness ↔ non-destructive integration of
+new concepts, not ↔ faster reach to new ones.** A falsifiable, specific narrowing of
+the Wagner import rather than a blanket confirmation.
+
 ## Caveats
 
 - **Across-seed variance.** Verdicts above are mean over 5 seeds; the held-out
