@@ -5,3 +5,5 @@ numpy>=1.26
 scipy>=1.11
 matplotlib>=3.7
 pandas>=2.0
+# only for the paradigm-native SAE-feature lesion (real/sae_lesion.py); not needed for the toy
+transformers>=4.40

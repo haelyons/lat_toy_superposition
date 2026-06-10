@@ -34,6 +34,8 @@ python3 -m real.summary          # -> results/tx_summary.md (+ tx.png)
 python3 selectivity.py     # is general LAT's concentration uniform or importance-graded?
 python3 -m real.selectivity      # transformer control (skewed op-frequency)
 python3 selectivity_summary.py   # -> results/selectivity_summary.md (+ .png)
+pip install transformers         # only for the next one (SAE-feature lesion)
+python3 -m real.sae_lesion # paradigm-native: SAE-feature lesion on a fixed LM (distilgpt2)
 ```
 
 See [`CRITIQUE.md`](CRITIQUE.md) for the post-literature-review revision (why the
@@ -56,3 +58,4 @@ v1 concentration verdict was a measurement artifact and how it was corrected).
 | `lesion.py` | capability modification: directional concept knockout + collateral damage |
 | `selectivity.py` | is general LAT's concentration uniform or graded by importance/frequency/reliance? |
 | `real/` | realer substrate: tiny transformer (3 regimes) + ported lesion/innovability/selectivity probes (CPU stand-in for the GPU-cluster rung) |
+| `real/sae_lesion.py` | paradigm-native: SAE features as concepts on a FIXED pretrained LM; latent ablation collateral vs reliance/interference (GPU-ready, model/SAE swappable) |

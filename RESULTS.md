@@ -380,6 +380,39 @@ does the input-AT advantage survive when the three regimes are *full pretraining
 real LLM*, rather than a fine-tune on a shared base? (`real/model.py` is plain PyTorch and
 moves to CUDA unchanged; only a `.to(device)` plumbing pass is needed.)
 
+## Paradigm-native: SAE-feature lesion on a fixed pretrained LM (`real/sae_lesion.py`)
+
+In practice, capabilities are added/removed in LLMs by **latent steering/ablation on a
+fixed model** — you don't retrain. So the most paradigm-relevant export of this project is
+the *editability theory*, not the training-regime comparison: it predicts how clean a
+latent edit will be from the representation alone, and it needs no retraining. This probe
+ports the lesion to the real paradigm — **SAE features as concepts on distilgpt2** — and
+asks whether edit collateral is governed by the same axes (reliance, interference) found
+in the toy and transformer. (CPU dry run; the model/SAE are swappable for a larger model
+and a pretrained SAE on the GPU rung with no change to the probe.)
+
+Each SAE feature's unit decoder direction is projected out of the layer-4 residual; per
+token we split the cross-entropy change into **self_effect** (tokens where the feature
+fired — the legitimate edit) and **collateral** (tokens where it did not — entanglement
+damage). 160 features, SAE dict 3072 / k32 (FVU≈0.02).
+
+**Result: the reliance law replicates in-paradigm.** `r(collateral, reliance) = +0.52`
+(genuine knockouts **+0.61**) — the more a feature is relied on (fires often), the more
+collateral its removal causes, exactly as in the toy (where reliance dominated) and the
+transformer. Interference is ~flat here (`r = +0.02`): with a large overcomplete dictionary
+the decoder directions are near-uniformly low-overlap, so reliance is the discriminating
+axis. Edits are surgical on average (mean self_effect 0.146 ≫ collateral 0.020,
+ratio 0.14) — consistent with steering/ablation "working", but with a collateral floor set
+by reliance. See `results/sae_lesion.png`, `results/sae_lesion_summary.md`.
+
+**Why this matters for the paradigm.** It is the paradigm-native confirmation that
+**steering/ablation cleanliness is a measurable property of the representation you are
+handed** (dominated by reliance), not something you fix with a cleverer vector. The probe
+is the deliverable for the GPU rung: point `MODEL_NAME` at a real model and load a
+pretrained SAE in `build_sae`, and the same reliance/interference→collateral analysis runs
+unchanged. It needs only one model (no three-regime training), so it is the cheapest and
+most directly useful thing to run against a real LLM.
+
 ## Caveats
 
 - **Across-seed variance.** Verdicts above are mean over 5 seeds; the held-out
