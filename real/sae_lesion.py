@@ -40,14 +40,28 @@ N_EVAL_SEQ = 40           # sequences for the lesion eval
 SEQ_LEN = 128
 N_FEATURES_LESION = 160   # how many alive features to ablate (cost = one fwd each)
 CORPUS = "/tmp/corpus.txt"
+CORPUS_URL = ("https://raw.githubusercontent.com/karpathy/char-rnn/master/"
+              "data/tinyshakespeare/input.txt")
 
 
 # ----------------------------- corpus -----------------------------
+def _get_corpus():
+    """Cached tiny-shakespeare for the CPU dry run; self-fetching so a fresh container
+    works. GPU rung: replace with a real corpus (wikitext / the SAE's training data)."""
+    if not os.path.exists(CORPUS):
+        try:
+            import urllib.request
+            txt = urllib.request.urlopen(CORPUS_URL, timeout=30).read().decode("utf8", "ignore")
+            open(CORPUS, "w").write(txt)
+        except Exception as e:                          # offline fallback (degenerate; warn)
+            print(f"  [warn] corpus fetch failed ({type(e).__name__}); using tiny fallback. "
+                  "Provide a real corpus at " + CORPUS + " for meaningful SAE features.")
+            return "To be, or not to be, that is the question. " * 2000
+    return open(CORPUS).read()
+
+
 def load_tokens(tok, n_seq, seqlen, seed=0):
-    if os.path.exists(CORPUS):
-        text = open(CORPUS).read()
-    else:                                   # tiny embedded fallback
-        text = ("To be, or not to be, that is the question. " * 2000)
+    text = _get_corpus()
     ids = tok(text, return_tensors="pt").input_ids[0]
     n = min(n_seq, (len(ids) - 1) // seqlen)
     g = torch.Generator().manual_seed(seed)
