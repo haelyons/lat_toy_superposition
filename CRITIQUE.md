@@ -194,6 +194,25 @@ modification; LAT is a weaker cousin" thesis is **not** an artifact of the linea
 bottleneck. (CPU stand-in for the future GPU-cluster rung, where the same probes re-point
 at a pretrained LLM + SAE features.) See `results/tx.png`, `results/tx_summary.md`.
 
+### P1 — Selectivity: general LAT concentrates selectively, not uniformly — NEW DATA
+
+Abbas et al. use *general* (untargeted) LAT yet report concentration of *one* concept
+(refusal). The implicit puzzle: a general perturbation should affect all concepts. We
+resolve it. `selectivity.py` regresses the per-concept LAT-induced concentration change
+against importance and frequency. **General LAT is general in its perturbation but
+selective in its effect — it reshapes concepts in proportion to how the loss/adversary
+engages them, not uniformly.** Toy (importance is a loss weight): LAT strengthens/cleans
+the *important* concepts (w_norm-vs-importance r=+0.46, D r=+0.23; input-AT shows none,
+ruling out an artifact). Transformer control (ops differ only in frequency, equal loss
+weight): the sign *flips* — LAT strengthens the *rare/vulnerable* ops (embnorm-vs-freq
+r=−0.67). So the selection axis — and its sign — is set by the fine-tuning
+distribution/objective, which is why refusal (salient to the safety objective)
+concentrated while other concepts need not have. A further caution: the grading lives in
+the **weight/reliance geometry, not the activation SVD spectrum** (the Abbas-style
+effective-dim is ~flat vs importance here) — audit LAT by reliance, not SVD alone. This
+corrects any "LAT concentrates everything" reading and is the headline correction for the
+revised write-up. See `results/selectivity_summary.md`, `results/selectivity.png`.
+
 ## What was NOT changed (and why)
 
 - **Main 135-run sweep not re-run.** It reproduces exactly and the fix is an

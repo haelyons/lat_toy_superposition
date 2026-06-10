@@ -291,6 +291,41 @@ level, editability is a property conferred by adversarial training broadly — a
 the input-space variety — rather than by the concentration metric per se. The clean
 "LAT specialises in editing existing capabilities" hypothesis is **not** supported.
 
+## Selectivity — does general LAT concentrate *all* concepts, or selectively? (`selectivity.py`)
+
+Abbas et al. apply *general* (untargeted) LAT and report that *one* concept (refusal)
+concentrates. If LAT concentrated everything uniformly that would be unremarkable; the
+publishable question is whether general LAT is general in its *perturbation* but
+**selective in its *effect***. We test this directly by regressing the LAT-induced change
+in each concept's concentration against the concept's **importance** (geometric decay,
+varies within a cell) and **frequency** (1−sparsity, across cells). Untargeted `lat` vs
+baseline, full grid, 3 seeds. See `results/selectivity_summary.md`,
+`results/selectivity.png`, and the transformer control `results/tx_selectivity.csv`.
+
+**Verdict: general LAT is NOT uniform — it is selective, and the selection axis is set by
+the fine-tuning distribution/objective.** This is the correction to any "LAT reshapes
+every concept equally" reading: refusal concentrated because it is *salient to the safety
+objective*, not because LAT touches all concepts the same.
+
+- **Toy (importance = an explicit loss weight): LAT selectively strengthens/cleans the
+  IMPORTANT concepts.** `r(w_norm gain, importance) = +0.46`; `r(D gain, importance) =
+  +0.23` (concentration regime). input-AT shows *no* such grading (w_norm r = −0.22), so
+  this is LAT-specific, not a generic "important concepts grow" artifact.
+- **Transformer control (ops differ only in FREQUENCY, equal per-instance loss):** the
+  sign **flips** — `r(frequency, Δembedding-norm under LAT) = −0.67` (per-seed
+  −0.87/−0.41/−0.96). With equal loss weight, LAT strengthens the **rare/most-vulnerable**
+  ops most (robustness-equalisation). So the *direction* of selectivity depends on what
+  makes a concept matter to the loss (loss-weight vs frequency) — exactly the
+  "depends on the fine-tuning data" caveat, made concrete.
+- **The grading lives in the WEIGHT/reliance geometry, not the activation effective-dim.**
+  The Abbas-style activation "collapse to 1D" (late-site `top1_evr`/`pr`) is ~flat vs
+  importance in the toy and noisy in the transformer; what moves selectively is how
+  strongly/cleanly a concept is *written into the weights*. **Audit LAT by reliance, not
+  SVD spectra alone.**
+
+This also reconnects to the lesion result: the *reliance* axis that dominated editability
+is the same axis along which LAT selectively reshapes concepts.
+
 ## Realer substrate — does the story survive attention + depth? (`real/`)
 
 Everything above lives in an Elhage-style autoencoder. The natural objection is that the

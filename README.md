@@ -31,6 +31,9 @@ python3 lesion.py          # capability modification: concept knockout + collate
 python3 lesion_summary.py        # -> results/lesion_summary.md (+ .png)
 python3 -m real.run        # realer substrate: tiny transformer x 3 regimes + both probes
 python3 -m real.summary          # -> results/tx_summary.md (+ tx.png)
+python3 selectivity.py     # is general LAT's concentration uniform or importance-graded?
+python3 -m real.selectivity      # transformer control (skewed op-frequency)
+python3 selectivity_summary.py   # -> results/selectivity_summary.md (+ .png)
 ```
 
 See [`CRITIQUE.md`](CRITIQUE.md) for the post-literature-review revision (why the
@@ -51,4 +54,5 @@ v1 concentration verdict was a measurement artifact and how it was corrected).
 | `evolvability.py` | Wagner evolvability probe: adapt-to-new-concept + compositionality |
 | `innovability.py` | viable innovation: new-concept acquisition without forgetting (battery) |
 | `lesion.py` | capability modification: directional concept knockout + collateral damage |
-| `real/` | realer substrate: tiny transformer (3 regimes) + ported lesion/innovability probes (CPU stand-in for the GPU-cluster rung) |
+| `selectivity.py` | is general LAT's concentration uniform or graded by importance/frequency/reliance? |
+| `real/` | realer substrate: tiny transformer (3 regimes) + ported lesion/innovability/selectivity probes (CPU stand-in for the GPU-cluster rung) |
