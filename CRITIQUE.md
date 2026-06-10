@@ -176,6 +176,24 @@ second-order editability gain — the clean "concentration ⇒ surgical editabil
 advantage" story is **not** supported. See `results/lesion.png`,
 `results/lesion_summary.md`.
 
+### P1 — Realer substrate (transformer) replicates the input-AT advantage — NEW DATA
+
+The obvious objection to all of the above: it is a linear autoencoder. `real/` ports both
+capability-modification probes to a **2-layer transformer** on multi-skill modular
+arithmetic (6 operations as separable capabilities), with LAT/input-AT applied as
+fine-tunes on a shared clean pretrain (their real-world usage; from-scratch AT at ε=0.1
+could not even learn the task). Robustness sanity confirms the regimes diverged (input-AT
+robust at the embedding site 0.95, LAT at the residual site 1.00, baseline neither).
+**The toy's central result replicates cleanly:** input-AT is the most surgically editable
+(knockout collateral 0.007 vs baseline 0.045 vs LAT 0.035; input-AT>baseline 3/3, LAT
+never beats input-AT) and forgets least when a new skill is bolted on with no rehearsal
+(input-AT<baseline 7/9). The geometry→function link is *stronger* here than in the toy —
+a capability's input-embedding interference predicts its knockout collateral at
+`r=+0.30…+0.65`. So the "input robustness, not latent robustness, drives capability
+modification; LAT is a weaker cousin" thesis is **not** an artifact of the linear
+bottleneck. (CPU stand-in for the future GPU-cluster rung, where the same probes re-point
+at a pretrained LLM + SAE features.) See `results/tx.png`, `results/tx_summary.md`.
+
 ## What was NOT changed (and why)
 
 - **Main 135-run sweep not re-run.** It reproduces exactly and the fix is an

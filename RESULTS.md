@@ -291,6 +291,60 @@ level, editability is a property conferred by adversarial training broadly — a
 the input-space variety — rather than by the concentration metric per se. The clean
 "LAT specialises in editing existing capabilities" hypothesis is **not** supported.
 
+## Realer substrate — does the story survive attention + depth? (`real/`)
+
+Everything above lives in an Elhage-style autoencoder. The natural objection is that the
+verdicts are artifacts of a linear bottleneck. So we ported the two capability-
+modification probes to a **2-layer transformer** on a **multi-skill modular-arithmetic**
+task (`a op b =`, 6 operations; each operation is a separable "capability"). LAT and
+input-AT are applied the way they are used in practice — as a **fine-tune** on top of a
+shared clean pretrain (from-scratch AT at ε=0.1 prevented the model from learning the
+exact-answer task at all, itself a finding), so all three conditions branch from the same
+checkpoint and only the objective differs. 3 seeds. See `results/tx.png`,
+`results/tx_summary.md`, `real/`.
+
+**Robustness sanity (the regimes genuinely diverged).** Under PGD, baseline is fragile at
+both sites (adv acc ~0.2–0.3); **input-AT is robust at the input/embedding site (0.95)**
+and **LAT at the latent/residual site (1.00)** — each robust exactly where it perturbs.
+
+**The toy's central result replicates — input-space robustness wins both directions of
+capability modification, cleanly.**
+
+| direction | metric (lower = better) | baseline | input-AT | LAT | paired |
+|---|---|---:|---:|---:|---|
+| **remove** (lesion) | collateral of op knockout | 0.045 | **0.007** | 0.035 | input-AT>base 3/3; LAT>base 3/3; LAT>input-AT 0/3 |
+| **add** (innovability) | old-skill forgetting | 0.479 | **0.432** | 0.440 | input-AT<base 7/9; LAT<base 7/9; LAT<input-AT 3/9 |
+
+- **Editability is the strong effect**: input-AT is **~6× more surgically editable** than
+  baseline (knocking out one skill barely touches the others), LAT roughly halfway —
+  exactly the toy's ordering, and exactly the "LAT is a weaker cousin" pattern (LAT never
+  beats input-AT, 0/3).
+- **The geometry→function link replicates, more cleanly than in the toy**: the
+  interference of a capability's *input (embedding) direction* positively predicts the
+  collateral of removing it (`r = +0.30…+0.65` across conditions, vs the toy's +0.12).
+  This reinforces the input-space theme — a capability's editability is set by how its
+  *input representation* overlaps with others.
+- **Innovability is directionally consistent but weaker**: with no rehearsal all regimes
+  forget a lot (~45%), but both robust regimes forget less than baseline (7/9 each), with
+  input-AT marginally ahead of LAT.
+
+**Bottom line: the autoencoder verdicts were not artifacts of the linear bottleneck.**
+With attention and depth, input-space adversarial training is again the consistent winner
+for capability modification — most editable, least forgetting — and LAT again a weaker
+version that still beats baseline. The "input robustness, not latent robustness" thesis
+holds across both substrates.
+
+*Toward the GPU substrate.* This custom-trained transformer is a stand-in: it lets us
+keep the three-regime comparison (which needs us to train the models) on CPU until the
+environment is wired to a GPU cluster over SSH. The two probes are written to be
+substrate-agnostic — a lesion is "project a concept's direction out and measure collateral
+on the rest"; innovability is "adapt a held-out capability and measure forgetting" — so on
+the GPU rung they re-point at a **pretrained LLM with SAE features as the concepts** with
+no change to the experimental logic. The open question that only the GPU rung can settle:
+does the input-AT advantage survive when the three regimes are *full pretraining runs of a
+real LLM*, rather than a fine-tune on a shared base? (`real/model.py` is plain PyTorch and
+moves to CUDA unchanged; only a `.to(device)` plumbing pass is needed.)
+
 ## Caveats
 
 - **Across-seed variance.** Verdicts above are mean over 5 seeds; the held-out
