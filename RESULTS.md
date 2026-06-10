@@ -187,7 +187,62 @@ faces of Wagner come apart in this toy.
 
 So in this toy the analogy refines to: **robustness ↔ non-destructive integration of
 new concepts, not ↔ faster reach to new ones.** A falsifiable, specific narrowing of
-the Wagner import rather than a blanket confirmation.
+the Wagner import rather than a blanket confirmation. **But this single-concept probe
+never raced the two robustness conditions against each other on integration quality —
+the innovability follow-up below does, and it relocates the entire effect.**
+
+## Innovability — which robustness enables *viable* innovation? (follow-up; `innovability.py`)
+
+The evolvability probe split the Wagner thesis into "forgets less" and "slower to
+acquire," reported as two traded-off signals against baseline. That is a half-result,
+and it tested only LAT-vs-baseline. Wagner's evolvability is neither speed nor a single
+target — it is **innovability**: the breadth of new concepts reachable *without
+sacrificing existing function* (a mutation that grants a new function but breaks an
+essential one is selected against). That joint criterion is also the faithful
+LLM-context reading — *acquire new capabilities without catastrophic forgetting* — and
+it collapses the two faces into one number.
+
+We pretrain on a **sub-environment** (a battery of `B=6` features held inactive), then
+from the same checkpoint integrate each held-out "niche" independently under selection
+pressure, identical SGD across conditions (only the pretrained basin differs). Per
+budget we score **raw innovability** (fraction of the battery reaching new-concept
+FVU<0.20) and **clean innovability** (also keeping old-concept FVU rise <0.05 — viable).
+Cells n/m∈{2,4,8}, S=0.9, 5 seeds, 270 candidate-runs. See `results/innovability.png`,
+`results/innovability_summary.md`.
+
+**Verdict: viable innovation is conferred by INPUT-space robustness, not latent
+robustness — overturning the LAT-specific reading.** The effect lives entirely at the
+mid-capacity cell (n/m=4) where adding a concept actually taxes existing function; at
+n/m=2 (under-capacity) and n/m=8 everyone integrates cleanly.
+
+- **At n/m=4, all three conditions *reach* the new concept (raw → 1.0 by budget), but
+  only input-AT does so *cleanly*** (clean innovability **0.97** at full budget; AUC
+  0.77). Baseline and LAT reach the new concept and **wreck the old ones** (clean 0.07
+  and 0.17; AUC 0.03 and 0.07). Per-seed forgetting is dead consistent: input-AT ≈0.027
+  (below the 0.05 viability bar at every seed), baseline ≈0.065, LAT ≈0.055.
+- **LAT loses to input-AT on clean innovability in 0/15 seed-cells.** The marginal
+  LAT>baseline forgetting edge from the single-concept probe survives (LAT≥baseline 4/5
+  at n/m=4) but is negligible next to input-AT, which the earlier probe never raced.
+- **Stiffness confirmed directly but decoupled from preservation.** Init gradient norm
+  on the new concept at n/m=4: LAT **0.92** vs baseline 6.5, input-AT 5.3 — LAT's basin
+  is ~7× stiffer, as the slow-acquisition result implied. Yet that stiffness buys it
+  **nothing** for preservation: it forgets like baseline. So "wide/flat basin ⇒ protects
+  existing function" — the mechanism the evolvability write-up inferred — is **wrong**.
+- **At n/m=8 input-AT even shows slightly *negative* forgetting** (−0.009): integrating
+  a new concept marginally *improves* old reconstruction.
+
+Mechanism (intuitive, and the transferable claim): **innovation is an input-space
+event** — a genuinely new feature switching on is a perturbation in feature space.
+Input-AT is trained to reconstruct correctly under exactly that kind of perturbation,
+so a new feature direction integrates without colliding with existing ones. LAT perturbs
+the *latent* `h`, a different geometry that does not align with "a new input feature
+appears," so it confers no integration protection despite a much stiffer basin. **The
+type of robustness must match the type of distribution shift that innovation induces** —
+and for adding concepts, that is input-space, not latent-space, robustness.
+
+This sharpens the project's thesis rather than confirming it: robustness *does* enable
+evolvability in this toy, but the link is specific to **input robustness**, and LAT —
+the method under study — is on the wrong side of it for non-destructive integration.
 
 ## Caveats
 

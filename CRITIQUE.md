@@ -17,6 +17,14 @@ weight geometry), **LAT does concentrate**, and it does so *capacity-dependently
 (capacity-dependence). After the fix, widen + concentrate **co-occur** in the
 low/mid-capacity cells, exactly as Claim B predicted.
 
+Separately, the Wagner *evolvability* payoff was tested (`evolvability.py`,
+`innovability.py`) and yields a sharp, surprising result: **viable innovation —
+acquiring a new concept without catastrophic forgetting of old ones — is conferred by
+input-space adversarial training, not by LAT.** LAT's basin is markedly stiffer yet
+forgets like baseline during integration; only input-AT innovates cleanly, and only at
+the capacity where it matters. The robustness↔evolvability link is real but located in
+input robustness, with LAT on the wrong side of it.
+
 ## Prioritised findings
 
 ### P0 — The concentration proxy is structurally degenerate (corrected)
@@ -123,10 +131,29 @@ and fixed en route — a dead-ReLU revive-or-not confound (fixed by the fresh re
 and a 3-seed result that was entirely seed-0-driven (fixed by 5 seeds + per-seed
 win-counts, not cell means). **Outcome: asymmetric, partial support.** LAT
 *reduces forgetting* of existing concepts during adaptation (12/14 seed-cells) but is
-*slower* to acquire the new concept (13/14) and fails once outright — the robust
-basin protects what exists but is stiffer, not more plastic. Readability (3/15) and
-compositionality are not LAT-favouring. The Wagner analogy narrows to "robustness ↔
-non-destructive integration," not "↔ faster reach." See `results/evolvability_summary.md`.
+*slower* to acquire the new concept (13/14) and fails once outright — appearing to
+protect what exists while being stiffer, not more plastic. Readability (3/15) and
+compositionality are not LAT-favouring. See `results/evolvability_summary.md`.
+
+### P1 — Innovability follow-up relocates the evolvability effect — NEW DATA
+
+The evolvability probe raced only LAT-vs-baseline and split the result into "forgets
+less" + "slower." `innovability.py` tests the evolutionarily honest joint criterion —
+**viable innovation**: across a battery of 6 held-out niches, what fraction can be
+acquired (new-concept FVU<0.20) *while preserving existing function* (old-concept FVU
+rise<0.05)? This collapses the two faces into one number and, crucially, races all
+three conditions. **Outcome: viable innovation is conferred by INPUT-space robustness,
+not latent robustness — the LAT-specific reading is overturned.** At the only
+discriminating cell (n/m=4, where innovating taxes capacity), all conditions *reach* the
+new concept but only input-AT integrates it *cleanly* (clean innovability 0.97 vs
+baseline 0.07, LAT 0.17; per-seed forgetting input-AT ≈0.027 vs baseline 0.065, LAT
+0.055). **LAT loses to input-AT on clean innovability in 0/15 seed-cells.** The
+gradient-norm probe confirms LAT's basin is ~7× stiffer (0.92 vs 5–6.5) yet that
+stiffness buys *nothing* for preservation — so the "wide basin protects existing
+function" mechanism inferred above is **wrong**. Mechanism: adding a concept is an
+input-space perturbation, which input-AT is trained for; LAT perturbs the latent, a
+mismatched geometry. **The kind of robustness must match the kind of shift innovation
+induces.** See `results/innovability.png`, `results/innovability_summary.md`.
 
 ## What was NOT changed (and why)
 
