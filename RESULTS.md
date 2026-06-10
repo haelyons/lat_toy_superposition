@@ -244,6 +244,53 @@ This sharpens the project's thesis rather than confirming it: robustness *does* 
 evolvability in this toy, but the link is specific to **input robustness**, and LAT —
 the method under study — is on the wrong side of it for non-destructive integration.
 
+## Lesion / editability — what does "more concentrated" *mean*? (`lesion.py`)
+
+Claim B established that LAT *concentrates* the weight geometry (per-concept
+dimensionality D↑, interference I↓), but only ever as **geometry**. Its assumed
+*meaning* — that a low-interference concept can be modified without collateral damage —
+was never tested. This probe closes that IOU. It performs a real capability
+modification — a directional **knockout** of one concept in the latent (the standard
+activation edit, `h' = h − (h·ŵ_i)ŵ_i`) — and measures **collateral**: the FVU increase
+on the *other* concepts. The damage to concept *j* is mediated by `(ŵ_i·ŵ_j)`, exactly
+the term summed in `I_i`, so there is an analytic expectation that collateral tracks
+interference; the question is whether it cashes out in *function*. Full Claim B grid, 5
+seeds, 3555 knockouts. See `results/lesion.png`, `results/lesion_summary.md`.
+
+**(1) Concentration has functional editability meaning — but only once you control for
+magnitude.** Pooled, `r(collateral, I_i) = −0.42` — the *wrong* sign, a confound:
+high-interference concepts are the barely-represented junk ones (`r(I_i, ‖W_i‖)=−0.61`)
+whose removal does nothing. Conditioning on a *genuine* knockout (the concept was really
+removed) flips it to the predicted positive direction (`r=+0.12` pooled, +0.16–0.17 for
+baseline/LAT). So geometric concentration ↔ editability holds — modestly — among
+concepts the model actually relies on. The dominant determinant of "what breaks if I
+delete this" is **how much the model relies on the concept** (`r(collateral,‖W_i‖)=+0.32`),
+not its geometric overlap; concentration is a second-order effect on top of reliance.
+
+**(2) Robustly-trained models are more surgically editable — but it is not specifically
+a LAT effect.** Mean collateral: **input-AT 0.036 < LAT 0.046 < baseline 0.059** (self-
+drop matched, so this is comparable). LAT beats baseline in **43/45** seed-cells, but
+loses to input-AT in **34/45**. Strikingly, input-AT has the *highest* mean interference
+(0.18 vs LAT 0.14, baseline 0.13) yet the *lowest* collateral — so its editability is
+**not** explained by the interference metric at all (its scatter slope is ~flat). Input-AT
+achieves clean edits by some other route (plausibly the input-robust map keeps each
+concept's *contribution* recoverable even when directions overlap).
+
+**The capability-modification 2×2.** Combined with the innovability result:
+
+| direction of modification | clean winner | LAT vs baseline |
+|---|---|---|
+| **remove/edit an existing concept** (lesion) | input-AT (usually) ≥ LAT > baseline | LAT more editable 43/45 |
+| **acquire a new concept** (innovability) | input-AT | LAT ≈ baseline (both forget) |
+
+**Input-space robustness wins on *both* directions of capability modification; LAT is a
+weaker cousin for removal and the wrong tool for addition.** So the honest answer to
+"what does more-concentrated mean": at the per-concept level it means *modestly* more
+editable (geometry → function, confirmed but second-order to reliance); at the model
+level, editability is a property conferred by adversarial training broadly — and best by
+the input-space variety — rather than by the concentration metric per se. The clean
+"LAT specialises in editing existing capabilities" hypothesis is **not** supported.
+
 ## Caveats
 
 - **Across-seed variance.** Verdicts above are mean over 5 seeds; the held-out

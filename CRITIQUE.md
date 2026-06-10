@@ -155,6 +155,27 @@ input-space perturbation, which input-AT is trained for; LAT perturbs the latent
 mismatched geometry. **The kind of robustness must match the kind of shift innovation
 induces.** See `results/innovability.png`, `results/innovability_summary.md`.
 
+### P1 — Lesion probe: what "concentration" *means* for capability modification — NEW DATA
+
+Claim B measured concentration as geometry (interference I↓) but never tested its
+assumed *meaning*: that a low-interference concept is editable without collateral damage.
+`lesion.py` performs a real capability edit — directional **knockout** of a concept — and
+measures collateral FVU on the others (full grid, 5 seeds, 3555 knockouts). **Outcome,
+two parts.** (1) The geometry→function link is real but **second-order and confounded**:
+pooled `r(collateral, I_i)=−0.42` has the wrong sign purely because high-I concepts are
+weakly-represented junk; conditioning on a genuine knockout flips it to the predicted
+`+0.12` (+0.16 baseline/LAT). What actually governs "what breaks if I delete this" is
+*reliance* (`r(collateral,‖W_i‖)=+0.32`), not concentration. (2) Robustly-trained models
+*are* more editable (mean collateral input-AT 0.036 < LAT 0.046 < baseline 0.059; LAT
+beats baseline 43/45) — but it is **not a LAT-specific or even an interference-driven
+effect**: input-AT has the *highest* interference yet the *lowest* collateral. Combined
+with innovability this yields a capability-modification 2×2 in which **input-space
+robustness wins both directions** (remove *and* add), with LAT a weaker cousin on removal
+and the wrong tool for addition. So "more concentrated" cashes out as only a modest,
+second-order editability gain — the clean "concentration ⇒ surgical editability ⇒ LAT's
+advantage" story is **not** supported. See `results/lesion.png`,
+`results/lesion_summary.md`.
+
 ## What was NOT changed (and why)
 
 - **Main 135-run sweep not re-run.** It reproduces exactly and the fix is an

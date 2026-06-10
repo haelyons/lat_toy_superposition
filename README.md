@@ -25,6 +25,10 @@ python3 followups.py       # SPEC §9 forks: eps-sweep + targeted-LAT (critique)
 python3 followups_summary.py  # -> results/followups_summary.md
 python3 evolvability.py    # SPEC §10: Wagner robustness-enables-evolvability probe
 python3 evolvability_summary.py  # -> results/evolvability_summary.md
+python3 innovability.py    # viable innovation: acquire new concepts w/o forgetting
+python3 innovability_summary.py  # -> results/innovability_summary.md (+ .png)
+python3 lesion.py          # capability modification: concept knockout + collateral
+python3 lesion_summary.py        # -> results/lesion_summary.md (+ .png)
 ```
 
 See [`CRITIQUE.md`](CRITIQUE.md) for the post-literature-review revision (why the
@@ -43,3 +47,5 @@ v1 concentration verdict was a measurement artifact and how it was corrected).
 | `analyze.py` | summary tables, plots, B/C verdict (+ weight-level concentration) |
 | `followups.py` | ε-sweep + targeted-LAT experiments (critique) |
 | `evolvability.py` | Wagner evolvability probe: adapt-to-new-concept + compositionality |
+| `innovability.py` | viable innovation: new-concept acquisition without forgetting (battery) |
+| `lesion.py` | capability modification: directional concept knockout + collateral damage |
