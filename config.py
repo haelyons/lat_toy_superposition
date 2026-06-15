@@ -31,6 +31,13 @@ class Config:
     pgd_steps: int = 7                # inner loop 5-10 PGD steps (SPEC 5)
     # pgd step size as fraction of eps; classic 2.5*eps/steps rule -> ~0.36
     pgd_step_frac: float = 0.35
+    target_feature: int = 0           # lat_targeted: which concept the adversary corrupts
+                                      # (0 = most important under geometric decay)
+
+    # ---- follow-up experiments (SPEC 9 forks: eps sweep + targeted LAT) ----
+    sweep_eps: tuple = (0.05, 0.10, 0.20, 0.40)   # eps_rel dose-response sweep
+    sweep_cells: tuple = ((2, 0.9), (8, 0.9))     # (n_over_m, S): low- vs high-capacity
+    sweep_seeds: tuple = (0, 1, 2)
 
     # ---- SAE proxy (SPEC 6) ----
     sae_dict_mult: int = 4            # dict size = sae_dict_mult * n (overcomplete)

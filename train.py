@@ -1,9 +1,15 @@
 """Training loops for the three matched conditions (SPEC 5).
 
-baseline  : standard reconstruction.
-input_at  : PGD perturbation on x (L2 ball, eps relative to ||x||), reconstruct clean x.
-lat       : PGD perturbation on the bottleneck h (L2, eps relative to ||h||),
-            min_theta max_{||d||<=eps} loss(x, decode(h + d)).
+baseline    : standard reconstruction.
+input_at    : PGD perturbation on x (L2 ball, eps relative to ||x||), reconstruct clean x.
+lat         : PGD perturbation on the bottleneck h (L2, eps relative to ||h||),
+              min_theta max_{||d||<=eps} loss(x, decode(h + d)).  (untargeted)
+lat_targeted: SPEC 9 fork. Adversary maximises corruption of ONE target feature
+              (the most important, j=0) rather than the whole reconstruction;
+              the model still trains on full reconstruction. This is the toy
+              analogue of Sheshadri-style targeted LAT, used to test whether
+              targeting reproduces the Abbas et al. concentration of a single
+              concept direction.
 
 Only the perturbation differs; architecture, data stream, seed, step count and
 optimiser are identical across conditions.
@@ -77,6 +83,23 @@ def train(n, m, sparsity, condition, seed, cfg):
 
             delta = _pgd(loss_fn, delta0, eps, step_size, cfg.pgd_steps)
             # outer step: recompute h WITH grad so theta sees the perturbation
+            loss = weighted_mse(x, model.decode(model.encode(x) + delta), importance)
+
+        elif condition == "lat_targeted":
+            j = cfg.target_feature
+            with torch.no_grad():
+                h = model.encode(x)
+            eps = cfg.eps_rel * h.norm(dim=1, keepdim=True)
+            step_size = step_frac * eps
+            delta0 = torch.zeros_like(h)
+
+            # adversary maximises error on feature j only (corrupt one concept)
+            def loss_fn(d):
+                xhat_j = model.decode(h + d)[:, j]
+                return (importance[j] * (x[:, j] - xhat_j) ** 2).mean()
+
+            delta = _pgd(loss_fn, delta0, eps, step_size, cfg.pgd_steps)
+            # defender still optimises FULL reconstruction under the targeted attack
             loss = weighted_mse(x, model.decode(model.encode(x) + delta), importance)
         else:
             raise ValueError(condition)
